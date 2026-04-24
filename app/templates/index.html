@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Personajes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <h2>Gestor de Personajes</h2>
+
+    <div class="form-container">
+        <h3>Crear Nuevo Personaje</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Nombre</label>
+                <input type="text" id="nombre" placeholder="Ej: Aragorn" required>
+            </div>
+            <div>
+                <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Raza</label>
+                <select id="raza" required onchange="toggleCustomRaza(this.value, 'raza_custom')">
+                    <option value="Humano">Humano</option>
+                    <option value="Elfo">Elfo</option>
+                    <option value="Orco">Orco</option>
+                    <option value="Enano">Enano</option>
+                    <option value="Personalizada">Personalizada...</option>
+                </select>
+                <input type="text" id="raza_custom" placeholder="Raza personalizada" style="display: none;">
+            </div>
+            <div>
+                <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Color de Piel</label>
+                <input type="text" id="color_piel" placeholder="Ej: Pálida">
+            </div>
+            <div>
+                <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Fuerza</label>
+                <input type="number" id="fuerza" placeholder="1-100" min="1" max="100">
+            </div>
+            <div>
+                <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Agilidad</label>
+                <input type="number" id="agilidad" placeholder="1-100" min="1" max="100">
+            </div>
+            <div>
+                <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Magia</label>
+                <input type="number" id="magia" placeholder="1-100" min="1" max="100">
+            </div>
+            <div>
+                <label style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600;">Conocimiento</label>
+                <input type="number" id="conocimiento" placeholder="1-100" min="1" max="100">
+            </div>
+        </div>
+        <button onclick="crearPersonaje()" style="margin-top: 15px; width: 100%;">Crear Personaje</button>
+    </div>
+
+    <h3 style="color: #3e5a45; margin-top: 40px; margin-bottom: 15px;">Lista de Personajes</h3>
+    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <button onclick="cargarPersonajes()" style="background: #5b8a62; color: white; border-radius: 20px;">Refrescar</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Raza</th>
+                <th>Color Piel</th>
+                <th>Fuerza</th>
+                <th>Agil.</th>
+                <th>Magia</th>
+                <th>Conoc.</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-body">
+            <!-- Los personajes se cargarán aquí -->
+        </tbody>
+    </table>
+
+    <details class="json-accordion">
+        <summary>Ver Lista de Personajes en Formato JSON (Respuesta API)</summary>
+        <pre id="json-personajes" class="json-viewer">Cargando...</pre>
+    </details>
+
+    <div class="form-container combate-container">
+        <h3 style="color: #d47a6a;">Simulador de Combate</h3>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <select id="peleador1" style="flex: 1; min-width: 200px;">
+                <option value="">Selecciona Luchador 1</option>
+            </select>
+            <span style="font-weight: bold; color: #d47a6a; font-size: 18px;">VS</span>
+            <select id="peleador2" style="flex: 1; min-width: 200px;">
+                <option value="">Selecciona Luchador 2</option>
+            </select>
+            <button onclick="simularCombate()" style="background: #d47a6a; color: white; padding: 10px 25px; border-radius: 20px; white-space: nowrap;">¡COMBATIR!</button>
+        </div>
+        
+        <div id="resultado-combate" style="display: none; margin-top: 20px;">
+            <div id="combate-structured"></div>
+            
+            <details class="json-accordion" style="margin-top: 15px;">
+                <summary>Ver Resultado en Formato JSON (Respuesta API)</summary>
+                <pre id="json-combate" class="json-viewer"></pre>
+            </details>
+        </div>
+    </div>
+
+    <!-- Estructura del Modal para Editar -->
+    <div id="editarModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModal()">&times;</span>
+            <h3>Editar Personaje</h3>
+            
+            <input type="hidden" id="edit_id">
+            
+            <label for="edit_nombre">Nombre:</label>
+            <input type="text" id="edit_nombre" required>
+            
+            <label for="edit_raza">Raza:</label>
+            <select id="edit_raza" required onchange="toggleCustomRaza(this.value, 'edit_raza_custom')">
+                <option value="Humano">Humano</option>
+                <option value="Elfo">Elfo</option>
+                <option value="Orco">Orco</option>
+                <option value="Enano">Enano</option>
+                <option value="Personalizada">Personalizada...</option>
+            </select>
+            <input type="text" id="edit_raza_custom" placeholder="Raza personalizada" style="display: none;">
+            
+            <label for="edit_color_piel">Color de piel:</label>
+            <input type="text" id="edit_color_piel">
+            
+            <label for="edit_fuerza">Fuerza (1-100):</label>
+            <input type="number" id="edit_fuerza" min="1" max="100">
+            
+            <label for="edit_agilidad">Agilidad (1-100):</label>
+            <input type="number" id="edit_agilidad" min="1" max="100">
+            
+            <label for="edit_magia">Magia (1-100):</label>
+            <input type="number" id="edit_magia" min="1" max="100">
+            
+            <label for="edit_conocimiento">Conocimiento (1-100):</label>
+            <input type="number" id="edit_conocimiento" min="1" max="100">
+            
+            <button onclick="guardarEdicion()">Guardar Cambios</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/main.js') }}"></script>
+</body>
+</html>
