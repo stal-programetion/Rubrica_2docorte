@@ -1,8 +1,10 @@
-import sqlite3
+import psycopg2
 from app.model import Personaje
 
+DATABASE_URL = "postgresql://neondb_owner:npg_NoB8mVl9bsFy@ep-floral-mud-amfzdxn6-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require"
+
 def ConectionDB():
-    conn = sqlite3.connect('personajes.db')
+    conn = psycopg2.connect(DATABASE_URL)
     return conn
 
 if getattr(Personaje, '__table__', None) is not None:
@@ -10,15 +12,15 @@ if getattr(Personaje, '__table__', None) is not None:
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS personajes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre TEXT NOT NULL,
-            color_piel TEXT,
-            raza TEXT,
+            id SERIAL PRIMARY KEY,
+            nombre VARCHAR(50) NOT NULL,
+            color_piel VARCHAR(30),
+            raza VARCHAR(30),
             fuerza INTEGER,
             agilidad INTEGER,
             magia INTEGER,
             conocimiento INTEGER,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     conn.commit()

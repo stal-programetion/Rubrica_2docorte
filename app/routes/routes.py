@@ -29,7 +29,7 @@ def crear_personaje():
     cursor = conn.cursor()
     cursor.execute('''
         INSERT INTO personajes (nombre, color_piel, raza, fuerza, agilidad, magia, conocimiento)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     ''', (nombre, color_piel, raza, fuerza, agilidad, magia, conocimiento))
     conn.commit()
     conn.close()
@@ -63,7 +63,7 @@ def obtener_personajes():
 def obtener_personaje(id):
     conn = ConectionDB()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM personajes WHERE id = ?', (id,))
+    cursor.execute('SELECT * FROM personajes WHERE id = %s', (id,))
     personaje = cursor.fetchone()
     conn.close()
 
@@ -98,8 +98,8 @@ def actualizar_personaje(id):
     cursor = conn.cursor()
     cursor.execute('''
         UPDATE personajes
-        SET nombre = ?, color_piel = ?, raza = ?, fuerza = ?, agilidad = ?, magia = ?, conocimiento = ?
-        WHERE id = ?
+        SET nombre = %s, color_piel = %s, raza = %s, fuerza = %s, agilidad = %s, magia = %s, conocimiento = %s
+        WHERE id = %s
     ''', (nombre, color_piel, raza, fuerza, agilidad, magia, conocimiento, id))
     conn.commit()
     conn.close()
@@ -110,7 +110,7 @@ def actualizar_personaje(id):
 def eliminar_personaje(id):
     conn = ConectionDB()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM personajes WHERE id = ?', (id,))
+    cursor.execute('DELETE FROM personajes WHERE id = %s', (id,))
     conn.commit()
     conn.close()
 
@@ -129,11 +129,11 @@ def combate_route():
     cursor = conn.cursor()
     
     # Obtener personaje 1
-    cursor.execute('SELECT * FROM personajes WHERE id = ?', (id1,))
+    cursor.execute('SELECT * FROM personajes WHERE id = %s', (id1,))
     p1_data = cursor.fetchone()
     
     # Obtener personaje 2
-    cursor.execute('SELECT * FROM personajes WHERE id = ?', (id2,))
+    cursor.execute('SELECT * FROM personajes WHERE id = %s', (id2,))
     p2_data = cursor.fetchone()
     
     conn.close()
